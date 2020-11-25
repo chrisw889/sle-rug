@@ -1,9 +1,0 @@
-form myForm {
-	"are you a man?"
-		isMan: boolean
-	
-	if (isMan) {
-	  "do you deserve respect?"
-	    resp: boolean = (!isMan)
-	}
-}
