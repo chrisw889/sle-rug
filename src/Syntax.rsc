@@ -8,38 +8,38 @@ extend lang::std::Id;
  */
 
 start syntax Form 
-  = "form" Id "{" Question* "}"; 
+  = "form" Id name "{" Question* qs "}"; 
 
 // TODO: question, computed question, block, if-then-else, if-then
 syntax Question
-  = Str Id ":" Type
-  | Str Id ":" Type "=" Expr
-  | "if" "(" Expr ")" "{" Question* "}"
-  | "if" "(" Expr ")" "{" Question* "}" "else" "{" Question* "}";
+  = Str text Id def ":" Type type
+  | Str text Id def ":" Type type "=" Expr assign
+  | "if" "(" Expr guard ")" "{"Question* ifYes "}"
+  | "if" "(" Expr guard ")" "{" Question* ifYes "}" "else" "{" Question* ifNo "}";
 
 // TODO: +, -, *, /, &&, ||, !, >, <, <=, >=, ==, !=, literals (bool, int, str)
 // Think about disambiguation using priorities and associativity
 // and use C/Java style precedence rules (look it up on the internet)
 syntax Expr 
-  = \id: Id \ "true" \ "false" \ "form" \ "if" \ "else"  // reserved keywords.
-  | \bool: Bool
-  | \int: Int
-  > left par: "(" Expr ")"
-  > right not: "!" Expr
-  > left mult: Expr "*" Expr
-  > left div: Expr "/" Expr
-  > left add: Expr "+" Expr
-  > left sub: Expr "-" Expr
+  = \id: Id ref \ "true" \ "false" \ "form" \ "if" \ "else" \ "boolean" \ "integer" \ "string"  // reserved keywords.
+  | \bool: Bool bool
+  | \num: Int num
+  > left par: "(" Expr expr ")"
+  > right not: "!" Expr expr
+  > left mult: Expr lh "*" Expr rh
+  > left div: Expr lh "/" Expr rh
+  > left add: Expr lh "+" Expr rh
+  > left sub: Expr lh "-" Expr rh
   > non-assoc (
-    gt: Expr "\>" Expr
-  | lt: Expr "\<" Expr
-  | geq: Expr "\>=" Expr
-  | leq: Expr "\<=" Expr
+    gt: Expr lh "\>" Expr rh
+  | lt: Expr lh "\<" Expr rh
+  | geq: Expr lh "\>=" Expr rh
+  | leq: Expr lh "\<=" Expr rh
   )
-  > left eq: Expr "==" Expr
-  > left neq: Expr "!=" Expr
-  > left and: Expr "&&" Expr
-  > left or: Expr "||" Expr
+  > left eq: Expr lh "==" Expr rh
+  > left neq: Expr lh "!=" Expr rh
+  > left and: Expr lh "&&" Expr rh
+  > left or: Expr lh "||" Expr rh
   ;
   
 syntax Type
