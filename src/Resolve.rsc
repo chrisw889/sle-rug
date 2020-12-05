@@ -26,9 +26,25 @@ RefGraph resolve(AForm f) = <us, ds, us o ds>
   when Use us := uses(f), Def ds := defs(f);
 
 Use uses(AForm f) {
-  return {}; 
+  Use u = {};
+
+  visit (f){
+    case q:AQ(_, AId id, _):
+      u += { <q.src, id.name> };
+    case q:AQAssign(_, AId id, _, _):
+      u += { <q.src, id.name> };
+  }
+
+  return u; 
 }
 
 Def defs(AForm f) {
-  return {}; 
+  Def d = {};
+  
+  visit(f){
+  	case r:ref(AId id):
+  	  d += { <id.name, r.src> };
+  }
+  
+  return d;
 }
