@@ -1,6 +1,5 @@
 module AST
 
-import ParseTree;
 
 /*
  * Define Abstract Syntax for QL
@@ -11,11 +10,11 @@ import ParseTree;
 
 data AForm(loc src = |tmp:///|)
   = form(str name, list[AQuestion] questions)
-  ; 
+  ;
 
 data AQuestion(loc src = |tmp:///|)
   = AQ(str question, AId def, AType dataType)
-  | AQAssign(str question, AId def, AType typ, AExpr)
+  | AQAssign(str question, AId def, AType typ, AExpr expr)
   | AQIf(AExpr guard, list[AQuestion] ifYes)
   | AQIfElse(AExpr guard, list[AQuestion] ifYes, list[AQuestion] ifNo)
   ;

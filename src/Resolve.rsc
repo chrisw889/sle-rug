@@ -27,12 +27,10 @@ RefGraph resolve(AForm f) = <us, ds, us o ds>
 
 Use uses(AForm f) {
   Use u = {};
-
-  visit (f){
-    case q:AQ(_, AId id, _):
-      u += { <q.src, id.name> };
-    case q:AQAssign(_, AId id, _, _):
-      u += { <q.src, id.name> };
+  
+  visit(f){
+  	case ref(AId id):
+  	  u += { <id.src, id.name> };
   }
 
   return u; 
@@ -41,9 +39,11 @@ Use uses(AForm f) {
 Def defs(AForm f) {
   Def d = {};
   
-  visit(f){
-  	case r:ref(AId id):
-  	  d += { <id.name, r.src> };
+  visit (f){
+    case AQ(_, AId id, _):
+      d += { <id.name, id.src> };
+    case AQAssign(_, AId id, _, _):
+      d += { <id.name, id.src> };
   }
   
   return d;
