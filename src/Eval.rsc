@@ -2,7 +2,6 @@ module Eval
 
 import AST;
 import Resolve;
-import IO;
 
 /*
  * Implement big-step semantics for QL
@@ -88,8 +87,22 @@ Value eval(AExpr e, VEnv venv) {
     case lt(AExpr lh, AExpr rh): return vbool(eval(lh, venv).n < eval(rh, venv).n);
     case geq(AExpr lh, AExpr rh): return vbool(eval(lh, venv).n >= eval(rh, venv).n);
     case leq(AExpr lh, AExpr rh): return vbool(eval(lh, venv).n <= eval(rh, venv).n);
-    case eq(AExpr lh, AExpr rh): return vbool(eval(lh, venv).n == eval(rh, venv).n);
-    case neq(AExpr lh, AExpr rh): return vbool(eval(lh, venv).n != eval(rh, venv).n);
+    case equ(AExpr lh, AExpr rh): {
+    	evalL = eval(lh, venv);
+    	switch(evalL){
+    		case vint(int n): return vbool(n == eval(rh, venv).n);
+    		case vbool(bool b): return vbool(b == eval(rh, venv).b);
+    		default: return vbool(evalL.s == eval(rh, venv).s);
+    	}
+    }
+    case neq(AExpr lh, AExpr rh): {
+    	evalL = eval(lh, venv);
+    	switch(evalL){
+    		case vint(int n): return vbool(n != eval(rh, venv).n);
+    		case vbool(bool b): return vbool(b != eval(rh, venv).b);
+    		default: return vbool(evalL.s != eval(rh, venv).s);
+    	}
+    }
     case and(AExpr lh, AExpr rh): return vbool(eval(lh, venv).b && eval(rh, venv).b);
     case or(AExpr lh, AExpr rh): return vbool(eval(lh, venv).b || eval(rh, venv).b);
     

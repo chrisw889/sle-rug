@@ -67,7 +67,7 @@ set[Message] check(AExpr e, TEnv tenv, UseDef useDef) {
     case ref(AId x):
       	return { error("Undeclared question", x.src) | useDef[x.src] == {} };
     case not(AExpr expr): 
-    	return {error("Not expression input is not a boolean type", e.src) | typeOf(expr, tenv, useDef) != tint()}
+    	return {error("Not expression input is not a boolean type", e.src) | typeOf(expr, tenv, useDef) != tbool()}
     	+ check(expr, tenv, useDef);
   	case mult(AExpr exprL, AExpr exprR):
   		return {error("Inputs of multiplication expression are not both integers", e.src) | typeOf(exprL, tenv, useDef) != tint() || typeOf(exprR, tenv, useDef) != tint()}
@@ -101,12 +101,12 @@ set[Message] check(AExpr e, TEnv tenv, UseDef useDef) {
   		return {error("Inputs of less than or euqal expression are not both integers", e.src) | typeOf(exprL, tenv, useDef) != tint() || typeOf(exprR, tenv, useDef) != tint()}
   		+ check(exprL, tenv, useDef)
   		+ check(exprR, tenv, useDef);
-  	case eq(AExpr exprL, AExpr exprR):
-  		return {error("Inputs of equality expression are not both integers", e.src) | typeOf(exprL, tenv, useDef) != tint() || typeOf(exprR, tenv, useDef) != tint()}
+  	case equ(AExpr exprL, AExpr exprR):
+  		return {error("Inputs of equality expression are not the same type", e.src) | typeOf(exprL, tenv, useDef) !=  typeOf(exprR, tenv, useDef)}
   		+ check(exprL, tenv, useDef)
   		+ check(exprR, tenv, useDef);
   	case neq(AExpr exprL, AExpr exprR):
-  		return {error("Inputs of not equal expression are not both integers", e.src) | typeOf(exprL, tenv, useDef) != tint() || typeOf(exprR, tenv, useDef) != tint()}
+  		return {error("Inputs of not equal expression are not the same type", e.src) | typeOf(exprL, tenv, useDef) != typeOf(exprR, tenv, useDef)}
   		+ check(exprL, tenv, useDef)
   		+ check(exprR, tenv, useDef);
   	case and(AExpr exprL, AExpr exprR):
@@ -139,7 +139,7 @@ Type typeOf(AExpr e, TEnv tenv, UseDef useDef) {
   	case lt(_, _): return tbool();
   	case geq(_, _): return tbool();
   	case leq(_, _): return tbool();
-  	case eq(_, _): return tbool();
+  	case equ(_, _): return tbool();
   	case neq(_, _): return tbool();
   	case and(_, _): return tbool();
   	case or(_, _): return tbool();

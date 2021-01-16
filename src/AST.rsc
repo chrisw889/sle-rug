@@ -1,6 +1,5 @@
 module AST
 
-
 /*
  * Define Abstract Syntax for QL
  *
@@ -32,7 +31,7 @@ data AExpr(loc src = |tmp:///|)
   | lt(AExpr exprL, AExpr exprR)
   | geq(AExpr exprL, AExpr exprR)
   | leq(AExpr exprL, AExpr exprR)
-  | eq(AExpr exprL, AExpr exprR)
+  | equ(AExpr exprL, AExpr exprR)
   | neq(AExpr exprL, AExpr exprR)
   | and(AExpr exprL, AExpr exprR)
   | or(AExpr exprL, AExpr exprR)

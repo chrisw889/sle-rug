@@ -27,10 +27,20 @@ import AST;
  * Write a transformation that performs this flattening transformation.
  *
  */
- 
+
 AForm flatten(AForm f) {
-  return f; 
+	return form(f.name, ( [] | it + flatten(a, boolean(true)) | AQuestion a <- f.questions ));
 }
+
+list[AQuestion] flatten(AQ(str q, AId d, AType dt), AExpr guard) 
+	= [AQIf(guard, [AQ(q, d, dt)])];
+list[AQuestion] flatten(AQAssign(str q, AId d, AType dt, AExpr e), AExpr guard)
+	= [AQIf(guard, [AQAssign(q, d, dt, e)])];
+list[AQuestion] flatten(AQIf(AExpr g, list[AQuestion] ify), AExpr guard)
+	= ( [] | it + flatten(a, and(g, guard)) | AQuestion a <- ify );
+list[AQuestion] flatten(AQIfElse(AExpr g, list[AQuestion] ify, list[AQuestion] ifn), AExpr guard)
+	= ( [] | it + flatten(a, and(g, guard)) | AQuestion a <- ify )
+	+ ( [] | it + flatten(a, and(not(g), guard)) | AQuestion a <- ify );
 
 /* Rename refactoring:
  *
@@ -39,10 +49,6 @@ AForm flatten(AForm f) {
  *
  */
  
- start[Form] rename(start[Form] f, loc useOrDef, str newName, UseDef useDef) {
-   return f; 
- } 
- 
- 
- 
-
+start[Form] rename(start[Form] f, loc useOrDef, str newName, UseDef useDef) {
+	return f;
+}

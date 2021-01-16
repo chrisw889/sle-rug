@@ -50,7 +50,7 @@ AExpr cst2ast(expr: Expr e) {
     case (Expr)`<Expr x> \< <Expr y>`: return lt(cst2ast(x), cst2ast(y), src=expr@\loc);
     case (Expr)`<Expr x> \>= <Expr y>`: return geq(cst2ast(x), cst2ast(y), src=expr@\loc);
     case (Expr)`<Expr x> \<= <Expr y>`: return leq(cst2ast(x), cst2ast(y), src=expr@\loc);
-    case (Expr)`<Expr x> == <Expr y>`: return eq(cst2ast(x), cst2ast(y), src=expr@\loc);
+    case (Expr)`<Expr x> == <Expr y>`: return equ(cst2ast(x), cst2ast(y), src=expr@\loc);
     case (Expr)`<Expr x> != <Expr y>`: return neq(cst2ast(x), cst2ast(y), src=expr@\loc);
     case (Expr)`<Expr x> && <Expr y>`: return and(cst2ast(x), cst2ast(y), src=expr@\loc);
     case (Expr)`<Expr x> || <Expr y>`: return or(cst2ast(x), cst2ast(y), src=expr@\loc);
