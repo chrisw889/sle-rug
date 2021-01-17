@@ -21,9 +21,10 @@ syntax Question
 // Think about disambiguation using priorities and associativity
 // and use C/Java style precedence rules (look it up on the internet)
 syntax Expr 
-  = \id: Id ref \ "true" \ "false" \ "form" \ "if" \ "else" \ "boolean" \ "integer" \ "string"  // reserved keywords.
+  = \id: Id ref \ "true" \ "false"  // reserved keywords.
   | \bool: Bool bool
   | \num: Int num
+  | \str: Str str
   > left par: "(" Expr expr ")"
   > right not: "!" Expr expr
   > left mult: Expr lh "*" Expr rh

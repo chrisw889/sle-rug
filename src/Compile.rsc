@@ -1,5 +1,6 @@
 module Compile
 
+import Transform;
 import AST;
 import Resolve;
 import IO;
@@ -19,7 +20,7 @@ import lang::html5::DOM; // see standard library
  */
 
 void compile(AForm f) {
-  print("compiled");
+  f = flatten(f);
   writeFile(f.src[extension="js"].top, form2js(f));
   writeFile(f.src[extension="html"].top, toString(form2html(f)));
 }
@@ -155,6 +156,7 @@ default str qHide(AQuestion _) = "";
 str aExpr2js(ref(id(str n))) = "<n>_val";
 str aExpr2js(boolean(bool b)) = "<b>";
 str aExpr2js(number(int n)) = "<n>";
+str aExpr2js(string(str s)) = "\""+s+"\"";
 str aExpr2js(not(AExpr e)) = "!<aExpr2js(e)>";
 str aExpr2js(mult(AExpr l, AExpr r)) = "(<aExpr2js(l)>*<aExpr2js(r)>)";
 str aExpr2js(div(AExpr l, AExpr r)) = "Math.floor(<aExpr2js(l)>/<aExpr2js(r)>)";

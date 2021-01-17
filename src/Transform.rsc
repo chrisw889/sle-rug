@@ -3,6 +3,9 @@ module Transform
 import Syntax;
 import Resolve;
 import AST;
+import ParseTree;
+
+import IO;
 
 /* 
  * Transforming QL forms
@@ -12,6 +15,7 @@ import AST;
 /* Normalization:
  *  wrt to the semantics of QL the following
  *     q0: "" int; 
+ 
  *     if (a) { 
  *        if (b) { 
  *          q1: "" int; 
@@ -29,7 +33,7 @@ import AST;
  */
 
 AForm flatten(AForm f) {
-	return form(f.name, ( [] | it + flatten(a, boolean(true)) | AQuestion a <- f.questions ));
+	return form(f.name, ( [] | it + flatten(a, boolean(true)) | AQuestion a <- f.questions ), src=f.src);
 }
 
 list[AQuestion] flatten(AQ(str q, AId d, AType dt), AExpr guard) 
@@ -50,5 +54,25 @@ list[AQuestion] flatten(AQIfElse(AExpr g, list[AQuestion] ify, list[AQuestion] i
  */
  
 start[Form] rename(start[Form] f, loc useOrDef, str newName, UseDef useDef) {
-	return f;
+	set[loc] toRename = {useOrDef}
+					  + { d | <useOrDef, loc d> <- useDef }
+					  + { u | <loc u, useOrDef> <- useDef };
+	
+	visit (f){
+		case (Question)`<Str _><Id x>:<Type _>`: print("def of <x>\n");
+		case (Question)`<Str _><Id x>:<Type _>=<Expr _>`: print("def of <x>\n");
+		case (Expr)`<Id x>`: print("ref to <x>\n");
+	}
+	
+	return visit (f){
+		case (Question)`<Str s><Id x>:<Type t>`
+			=> (Question)`<Str s><Id nn>:<Type t>`
+				when x@\loc in toRename, Id nn := [Id]newName
+		case (Question)`<Str s><Id x>:<Type t>=<Expr e>`
+			=> (Question)`<Str s><Id nn>:<Type t>=<Expr e>`
+					when x@\loc in toRename, Id nn := [Id]newName
+		case (Expr)`<Id x>`
+			=> (Expr)`<Id nn>`
+				when x@\loc in toRename, Id nn := [Id]newName
+	}
 }

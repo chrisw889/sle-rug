@@ -78,6 +78,7 @@ Value eval(AExpr e, VEnv venv) {
     case ref(id(str x)): return venv[x];
     case boolean(bool b): return vbool(b);
     case number(int n): return vint(n);
+    case string(str s): return vstr(n);
     case not(AExpr ex): return vbool(!eval(ex, venv).b);
     case mult(AExpr lh, AExpr rh): return vint(eval(lh, venv).n * eval(rh, venv).n);
     case div(AExpr lh, AExpr rh): return vint(eval(lh, venv).n / eval(rh, venv).n);

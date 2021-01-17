@@ -40,6 +40,7 @@ AExpr cst2ast(expr: Expr e) {
     case (Expr)`<Id x>`: return ref(id("<x>", src=x@\loc), src=e@\loc);
     case (Expr)`<Bool x>`: return boolean((Bool)`true` := x ? true : false, src=x@\loc);
     case (Expr)`<Int x>`: return number(toInt("<x>"), src=x@\loc);
+    case (Expr)`<Str x>`: return string("<x>"[1..-1], src=x@\loc);
     case (Expr)`( <Expr x> )`: return cst2ast(x);
     case (Expr)`! <Expr x>`: return not(cst2ast(x), src=expr@\loc);
     case (Expr)`<Expr x> * <Expr y>`: return mult(cst2ast(x), cst2ast(y), src=expr@\loc);
