@@ -7,19 +7,18 @@ extend lang::std::Id;
  * Concrete syntax of QL
  */
 
+// Concrete syntax root of the form
 start syntax Form 
   = "form" Id name "{" Question* qs "}"; 
 
-// TODO: question, computed question, block, if-then-else, if-then
+// Concrete syntax of question, computed question, block, if-then-else and if-then
 syntax Question
   = Str text Id def ":" Type type
   | Str text Id def ":" Type type "=" Expr assign
   | "if" "(" Expr guard ")" "{"Question* ifYes "}"
   | "if" "(" Expr guard ")" "{" Question* ifYes "}" "else" "{" Question* ifNo "}";
 
-// TODO: +, -, *, /, &&, ||, !, >, <, <=, >=, ==, !=, literals (bool, int, str)
-// Think about disambiguation using priorities and associativity
-// and use C/Java style precedence rules (look it up on the internet)
+// Concrete syntax of exressions of +, -, *, /, &&, ||, !, >, <, <=, >=, ==, != and literals (bool, int, str)
 syntax Expr 
   = \id: Id ref \ "true" \ "false"  // reserved keywords.
   | \bool: Bool bool
@@ -43,16 +42,20 @@ syntax Expr
   > left or: Expr lh "||" Expr rh
   ;
   
+// Concrete syntax of literal types
 syntax Type
   = "boolean"
   | "integer"
   | "string";  
   
+// String regular expression
 lexical Str 
   = [\"] ![\"]* [\"];
 
+// positive/negative integer value regular expression
 lexical Int 
   = "-"?[1-9][0-9]*
   | [0];
 
+// boolean regular expression
 lexical Bool = "true" | "false";

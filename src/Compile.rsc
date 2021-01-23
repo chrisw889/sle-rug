@@ -20,15 +20,17 @@ import lang::html5::DOM; // see standard library
  */
 
 void compile(AForm f) {
-  f = flatten(f);
+  f = flatten(f); // flatten required for correct show and hide of questions part of if and if-else blocks
   writeFile(f.src[extension="js"].top, form2js(f));
-  writeFile(f.src[extension="html"].top, toString(form2html(f)));
+  writeFile(f.src[extension="html"].top, toString(form2html(f))); // when writing to html the HTML5ode type is converted to a string
 }
 
+// Conversion of AForm ast to html surrounding structure, returned as rascal HTML5Node ast
 HTML5Node form2html(AForm f)
   = html(
   	head(
   		title("<f.name>"),
+
   		style("form {
   	    '	max-width: 3000px;
   		'	display: block;
@@ -37,12 +39,13 @@ HTML5Node form2html(AForm f)
   	),
   	body(
   		h1("<f.name>"),
-  		form(fieldDefs(f)),
-  		script(src("jquery-3.5.1.min.js")),
+  		form(fieldDefs(f)), //generation of html form
+  		script(src("jquery-3.5.1.min.js")), // jquery installation required for dynamic interaction between html form and javscript
   		script(src("<f.src[extension="js"].file>"))
   	)
   );
   
+// Function gereates list of html div wrappers containing a label and input for each question
 list[HTML5Node] fieldDefs(AForm f) 
 	= ([] | it + fieldDefs(a) | AQuestion a <- f.questions);
 list[HTML5Node] fieldDefs(AQ(str q, id(str n), AType dt)) 
@@ -61,14 +64,18 @@ list[HTML5Node] fieldDefs(AQIfElse(_, list[AQuestion] ify, list[AQuestion] ifn))
 	= ([] | it + fieldDefs(a) | AQuestion a <- ify)
 	+ ([] | it + fieldDefs(a) | AQuestion a <- ifn);
 
+// default input values for each data type
 str TDefault(integer()) = "0";
 str TDefault(boolean()) = "false";
 str TDefault(string()) = "\"\"";
 
+// input type for each data type
 str TInpType(integer()) = "number";
 str TInpType(boolean()) = "checkbox";
 str TInpType(string()) = "text";
 
+// Conversion of AForm ast to javascript surrounding structure, returned as string
+// split into 3 sections; variable definitions, change listeners for input fields and form update function
 str form2js(AForm f)
 	= "<for (AQuestion a <- f.questions){>
  	'<varDefs(a)><}>
@@ -80,6 +87,8 @@ str form2js(AForm f)
   	'}
   	'formUpdates();";
 
+// For each question a jquery reference and a javascript variable is defined to easily query the form and
+// to store the value of a question respectively.
 str varDefs(AQ(_, id(str n), AType dt)) 
   = "let <n> = $(\"#<n>\");
     'let <n>_val = <TDefault(dt)>;";
@@ -93,7 +102,9 @@ str varDefs(AQIfElse(_, list[AQuestion] ify, list[AQuestion] ifn))
   = "<for (AQuestion a <- ify) {>
     '<varDefs(a)><}><for (AQuestion a <- ifn) {>
     '<varDefs(a)><}>";
-  
+
+// For each question a function is defined that is called by jquery at any time the content of a field is changed.
+// This function just calls the form update function
 str changeCalls(AQ(_, id(str n), _)) 
   = "<n>.change(function() {
     '  formUpdates();
@@ -110,7 +121,8 @@ str changeCalls(AQIfElse(_, list[AQuestion] ify, list[AQuestion] ifn))
     '<changeCalls(a)><}><for (AQuestion a <- ifn) {>
     '<changeCalls(a)><}>";
     
-    //formUpdates
+// formUpdates() function goes thorugh list of questions to update javacript variables, calculate
+// computed question values, and also show and hide questions based on if and if-else blocks
 str qUpdates(AQ(_, id(str n), AType dt)) 
   = (boolean() := dt) ? "<n>_val = <n>.is(\':checked\');" : "<n>_val = <n>.val();" ;
 str qUpdates(AQAssign(_, id(str n), AType dt, AExpr e)) 
@@ -144,7 +156,8 @@ str qUpdates(AQIfElse(AExpr g, list[AQuestion] ify, list[AQuestion] ifn))
   	'	<qUpdates(a)>
   	'	<}>
   	'}";
-  
+ 
+// show and hide of input fields using jquery, no output for ig and if-else blocks
 str qShow(AQ(_, id(str n), _)) = "<n>.show();\n\t$(\'label[for=<n>]\').show();\n";
 str qShow(AQAssign(_, id(str n), _, _)) = "<n>.show();\n\t$(\'label[for=<n>]\').show();\n";
 default str qShow(AQuestion _) = "";
@@ -153,6 +166,7 @@ str qHide(AQ(_, id(str n), _)) = "<n>.hide();\n\t$(\'label[for=<n>]\').hide();\n
 str qHide(AQAssign(_, id(str n), _, _)) = "<n>.hide();\n\t$(\'label[for=<n>]\').hide();\n";
 default str qHide(AQuestion _) = "";
 
+// converting AExpr ast to jquery expressions for evaluation of computed questions and if and if-else blocks
 str aExpr2js(ref(id(str n))) = "<n>_val";
 str aExpr2js(boolean(bool b)) = "<b>";
 str aExpr2js(number(int n)) = "<n>";

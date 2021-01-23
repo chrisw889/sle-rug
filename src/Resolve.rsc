@@ -13,6 +13,7 @@ alias Def = rel[str name, loc def];
 // modeling use occurrences of names
 alias Use = rel[loc use, str name];
 
+// relation of use and definition pairs
 alias UseDef = rel[loc use, loc def];
 
 // the reference graph
@@ -22,9 +23,16 @@ alias RefGraph = tuple[
   UseDef useDef
 ]; 
 
+/* 
+ * reference graph construction from ast form.
+ * calls use and definition generators then creates use-definition 
+ * relation by relation composition
+ */
 RefGraph resolve(AForm f) = <us, ds, us o ds>
   when Use us := uses(f), Def ds := defs(f);
 
+
+// All uses found by visit in case of ref() ast object (used in an expression)
 Use uses(AForm f) {
   Use u = {};
   
@@ -36,6 +44,7 @@ Use uses(AForm f) {
   return u; 
 }
 
+// All definitions found by visit in case of question or computed question
 Def defs(AForm f) {
   Def d = {};
   

@@ -6,6 +6,7 @@ import Resolve;
 import Message; // see standard library
 import Set;
 
+// new Type ast used for static error check functions
 data Type
   = tint()
   | tbool()
@@ -13,13 +14,13 @@ data Type
   | tunknown()
   ;
 
-// the type environment consisting of defined questions in the form 
+// The type environment consisting of defined questions in the form 
 alias TEnv = rel[loc def, str name, str label, Type \type];
 
-// To avoid recursively traversing the form, use the `visit` construct
-// or deep match (e.g., `for (/question(...) := f) {...}` ) 
+// Function to collect type information of all questions, returned as type environment relation
 TEnv collect(AForm f) {
   TEnv tenv = {};
+  
   visit (f){
     case AQ(str label, AId id, AType dt):
     	tenv += { <id.src, id.name, label, typeOf(dt)> };
@@ -30,13 +31,21 @@ TEnv collect(AForm f) {
   return tenv; 
 }
 
+
+/*
+ * Static error check function to find errors based on ast AForm
+ */
+
+// Errors returned in set structure of error messages
 set[Message] check(AForm f, TEnv tenv, UseDef useDef) {
-  return ( {} | it + check(q, tenv, useDef) | AQuestion q <- f.questions); 
+  return ( {} | it + check(q, tenv, useDef) | AQuestion q <- f.questions); // reduce statement to compile multiple check calls
 }
 
-// - produce an error if there are declared questions with the same name but different types.
-// - duplicate labels should trigger a warning 
-// - the declared type computed questions should match the type of the expression.
+// Static error check function for AQuestion ast
+// Error produced if there are declared questions with the same name but different types.
+// Error produced if there are duplicate labels
+// Error produced if the declared type of a computed questions does not match the type of the expression.
+// Error produced if the guard of an if or if-else if is not a boolean type
 set[Message] check(AQuestion q, TEnv tenv, UseDef useDef) {
   switch (q){
     case AQ(str label, i:id(str n), AType _):
@@ -59,9 +68,9 @@ set[Message] check(AQuestion q, TEnv tenv, UseDef useDef) {
   }
 }
 
-// Check operand compatibility with operators.
-// E.g. for an addition node add(lhs, rhs), 
-//   the requirement is that typeOf(lhs) == typeOf(rhs) == tint()
+// Static error check function for AExpr ast
+// Error produced if id used with no question to declare it
+// Error produced if operand types do not match with their operator and/or other operand
 set[Message] check(AExpr e, TEnv tenv, UseDef useDef) {
   switch (e) {
     case ref(AId x):
@@ -122,6 +131,8 @@ set[Message] check(AExpr e, TEnv tenv, UseDef useDef) {
   }
 }
 
+// Type checking function evaluates AExpr ast to find type
+// In the case of a variable the useDef graph is used to find the type of the defined question
 Type typeOf(AExpr e, TEnv tenv, UseDef useDef) {
   switch (e) {
     case ref(id(_, src = loc u)):
@@ -151,6 +162,7 @@ Type typeOf(AExpr e, TEnv tenv, UseDef useDef) {
   return tunknown();
 }
 
+// converting AType ast to Type ast used for check functions
 Type typeOf(AType t){
   switch (t) {
   	case integer(): return tint();
@@ -160,18 +172,6 @@ Type typeOf(AType t){
     default: return tunknown();
   }
 }
-
-/* 
- * Pattern-based dispatch style:
- * 
- * Type typeOf(ref(id(_, src = loc u)), TEnv tenv, UseDef useDef) = t
- *   when <u, loc d> <- useDef, <d, x, _, Type t> <- tenv
- *
- * ... etc.
- * 
- * default Type typeOf(AExpr _, TEnv _, UseDef _) = tunknown();
- *
- */
  
  
 

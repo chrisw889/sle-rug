@@ -7,26 +7,26 @@ import ParseTree;
 import String;
 
 /*
- * Implement a mapping from concrete syntax trees (CSTs) to abstract syntax trees (ASTs)
- *
- * - Use switch to do case distinction with concrete patterns (like in Hack your JS) 
- * - Map regular CST arguments (e.g., *, +, ?) to lists 
- *   (NB: you can iterate over * / + arguments using `<-` in comprehensions or for-loops).
- * - Map lexical nodes to Rascal primitive types (bool, int, str)
- * - See the ref example on how to obtain and propagate source locations.
+ * Mapping from concrete syntax trees (CSTs) to abstract syntax trees (ASTs)
  */
 
 AForm cst2ast(start[Form] sf) {
   Form f = sf.top; // remove layout before and after form
-  return form("<f.name>", [ cst2ast(q) | Question q <- f.qs ], src=f@\loc); 
+  
+  // List generator applies cst2ast to all concrete question trees to be comiled into AForm ast object
+  return form("<f.name>", [ cst2ast(q) | Question q <- f.qs ], src=f@\loc);  
 }
 
+
+// Creating AQuestion ast from each concrete question type 
 AQuestion cst2ast(qu: Question q) {
   switch (q){
     case (Question)`<Str text> <Id def> : <Type typ>`:
       return AQ("<text>", id("<def>", src=def@\loc), cst2ast(typ), src=qu@\loc);
     case (Question)`<Str text> <Id def> : <Type typ> = <Expr x>`:
       return AQAssign("<text>", id("<def>", src=def@\loc), cst2ast(typ), cst2ast(x), src=qu@\loc);
+      
+    // list generators used to apply cst2ast to all branching questions within if and if-else blocks
 	case (Question)`if ( <Expr x> ) { <Question* qs> }`: 
       return AQIf(cst2ast(x), [ cst2ast(iq) | iq <- qs ], src=qu@\loc);
     case (Question)`if ( <Expr x> ) { <Question* qs1> } else { <Question* qs2> }`: 
@@ -35,6 +35,7 @@ AQuestion cst2ast(qu: Question q) {
   }
 }
 
+// Creating AExpr ast from each concrete exression type
 AExpr cst2ast(expr: Expr e) {
   switch (e) {
     case (Expr)`<Id x>`: return ref(id("<x>", src=x@\loc), src=e@\loc);
@@ -60,6 +61,7 @@ AExpr cst2ast(expr: Expr e) {
   }
 }
 
+// Creating AType ast from each concrete literal type
 AType cst2ast(Type t) {
   switch (t) {
   	case (Type)`boolean`: return boolean();

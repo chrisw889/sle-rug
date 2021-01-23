@@ -1,16 +1,15 @@
 module AST
 
 /*
- * Define Abstract Syntax for QL
- *
- * - complete the following data types
- * - make sure there is an almost one-to-one correspondence with the grammar
+ * Abstract Syntax for QL
  */
 
+// Root of abstract syntax tree of form
 data AForm(loc src = |tmp:///|)
   = form(str name, list[AQuestion] questions)
   ;
 
+// Abstract syntax of question, computed question, block, if-then-else and if-then
 data AQuestion(loc src = |tmp:///|)
   = AQ(str question, AId def, AType dataType)
   | AQAssign(str question, AId def, AType typ, AExpr expr)
@@ -18,6 +17,7 @@ data AQuestion(loc src = |tmp:///|)
   | AQIfElse(AExpr guard, list[AQuestion] ifYes, list[AQuestion] ifNo)
   ;
 
+// Abstract syntax of exressions of +, -, *, /, &&, ||, !, >, <, <=, >=, ==, != and literals (bool, int, str)
 data AExpr(loc src = |tmp:///|)
   = ref(AId id)
   | boolean(bool boolVal)
@@ -38,10 +38,12 @@ data AExpr(loc src = |tmp:///|)
   | or(AExpr exprL, AExpr exprR)
   ;
 
+// Abstract syntax of available literal types
 data AType(loc src = |tmp:///|)
   = integer()
   | boolean()
   | string();
 
+// Abstract syntax of varible ID
 data AId(loc src = |tmp:///|)
   = id(str name);
